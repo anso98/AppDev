@@ -2,17 +2,37 @@ import { StatusBar } from 'expo-status-bar';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+
 
 const Stack = createNativeStackNavigator();
 
 // Idea: login soll über home möglich sein (dafür ist stack gut); wenn Login; dann auf die nächste Seite --> und dann eine tab benutzerauswahl!
 
 function Home( { navigation }) {
+
+  const [data, setData] = useState('');
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('http://192.168.178.23:5000/api/data');
+      setData(response.data.message);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     /*<Tab.Navigator>
       <Tab.Screen name="Feed" component={Feed} />
       <Tab.Screen name="Messages" component={Messages} />*/
       <View style={styles.test2}>
+      <Text>{data}</Text>
       <Text>HELLO!</Text>
       <StatusBar style="auto" />
       <Button
@@ -20,6 +40,7 @@ function Home( { navigation }) {
         onPress={() => navigation.navigate('Settings')}
       />
       </View>
+
     /*</Tab.Navigator>*/
   );
   }
