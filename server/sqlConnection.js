@@ -1,9 +1,20 @@
-const mysql = require("mysql");
+const mysql = require("mysql2");
+require('dotenv').config();
+
+const mySQLPassword = process.env.mySQLPassword;
   
 let db_con  = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: ''
+    password: mySQLPassword,
+    database: 'appUsers1',
+    authSwitchHandler: (data, cb) => {
+        if (data.pluginName === 'caching_sha2_password') {
+          const password = mySQLPassword; // Set your actual password
+          const passwordBuffer = Buffer.from(password + '\0');
+          cb(null, passwordBuffer);
+        }
+    }
 });
   
 db_con.connect((err) => {

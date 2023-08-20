@@ -2,6 +2,8 @@
 
 const express = require('express');
 
+const database = require('./sqlConnection');
+
 const bodyParser = require('body-parser');
 
 const app = express();
@@ -32,7 +34,7 @@ app.get('/api/data', (req, res) => {
 
   app.get("/createDatabase", (req, res) => {
   
-    let databaseName = "UserNames";
+    let databaseName = "gfg_db";
   
     let createQuery = `CREATE DATABASE ${databaseName}`;
   
