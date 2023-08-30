@@ -1,4 +1,4 @@
-const mysql = require("mysql2");
+const mysql = require('mysql2/promise');
 require('dotenv').config();
 
 const mySQLPassword = process.env.mySQLPassword;
@@ -16,13 +16,13 @@ let db_con  = mysql.createConnection({
         }
     }
 });
-  
-db_con.connect((err) => {
+
+/*db_con.connect((err) => {
     if (err) {
       console.log("Database Connection Failed !!!", err);
     } else {
       console.log("connected to Database");
     }
-});
+});*/
   
 module.exports = db_con;
