@@ -21,6 +21,14 @@ if (process.env.NODE_ENV !== 'test') {
     });
 }
 
+// Close the database connection pool when the server is shutting down
+process.on('SIGINT', async () => {
+    console.log('Closing database connection pool...');
+    await database.end();
+    console.log('Database connection pool closed.');
+    process.exit();
+  });
+
 app.get('/api/data', (req, res) => {
 
     const data = {
@@ -29,31 +37,6 @@ app.get('/api/data', (req, res) => {
     res.json(data);
   
 });
-
-// Old probably to be deleted?
-/*app.get("/createDatabase", (req, res) => {
-  
-    let databaseName = "gfg_db";
-  
-    let createQuery = `CREATE DATABASE ${databaseName}`;
-  
-    // use the query to create a Database.
-    database.query(createQuery, (err) => {
-        if(err) throw err;
-  
-        console.log("Database Created Successfully !");
-  
-        let useQuery = `USE ${databaseName}`;
-        database.query(useQuery, (error) => {
-            if(error) throw error;
-  
-            console.log("Using Database");
-              
-            return res.send(
-        `Created and Using ${databaseName} Database`);
-        })
-    });
-});*/
 
 //const users = [];
 
@@ -65,33 +48,17 @@ app.post('/register', async (req, res) => {
 
     const {email, username, password } = req.body;
 
-    // Create a database connection
-    console.log('Before connection to database');
-
-    const connection = await database.connect((err) => {
-        if (err) {
-        connection.end()
-          console.log("Database Connection Failed !!!", err);
-        } else {
-          console.log("connected to Database");
-        }
-     });
-
-    //const connection = await database.connect();
-
-     console.log("after if formula of connection")
+    const connection = await database;
 
     // Check if username or email already exist
     const [existingUsername] = await connection.query('SELECT id FROM users WHERE username = ?', [username]);
     const [existingEmail] = await connection.query('SELECT id FROM users WHERE email = ?', [email]);
 
     if (existingUsername.length > 0) {
-        connection.end();
         return res.status(409).json({ error: 'Username already exists' });
     }
     
     if (existingEmail.length > 0) {
-        connection.end();
         return res.status(409).json({ error: 'Email already exists' });
     }
 
@@ -100,8 +67,6 @@ app.post('/register', async (req, res) => {
   
     // Insert user data into the database
     await connection.query('INSERT INTO users (email, username, password) VALUES (?, ?, ?)', [email, username, hashedPassword]);
-
-    connection.end();
     
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
