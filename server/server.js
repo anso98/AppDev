@@ -12,6 +12,9 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
+const secretKey = process.env.JWT_SECRET_KEY;
+
+
 app.use(bodyParser.json());
 
 // Define your API routes here
@@ -75,28 +78,46 @@ app.post('/register', async (req, res) => {
   }
 });
 
-//Login
+// Login
 app.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    // Find user in the database (MySQL query)
-    const user = users.find(user => user.email === email);
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    try {
+      const { identifier, password } = req.body;
+
+      console.log(identifier)
+      console.log(password)
+  
+      const connection = await database; // Establish database connection
+      
+      // Find user in the database by email or username
+      const [userDataByEmail] = await connection.query('SELECT * FROM users WHERE email = ?', [identifier]);
+      const [userDataByUsername] = await connection.query('SELECT * FROM users WHERE username = ?', [identifier]);
+      
+      const userData = userDataByEmail.length > 0 ? userDataByEmail : userDataByUsername;
+      
+      console.log("Userdata:", userData)
+      
+      if (!userData || userData.length === 0) {
+        console.log("Invalid credentials")
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+  
+      const user = userData[0];
+  
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      
+      if (!isPasswordValid) {
+        console.log("Invalid password")
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+  
+      const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: '1h' });
+      
+      res.status(200).json({ token });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-    
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-    
-    const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: '1h' });
-    res.status(200).json({ token });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  });
 
 module.exports = app;
 

@@ -2,12 +2,15 @@ const mysql = require('mysql2');
 require('dotenv').config();
 
 const mySQLPassword = process.env.mySQLPassword;
+const databaseName = process.env.NODE_ENV === 'test' ? 'appUsers1_testbase' : 'appUsers1';
+
+console.log(databaseName);
 
 let db_con  = mysql.createPool({
     host: "localhost",
     user: "root",
     password: mySQLPassword,
-    database: 'appUsers1',
+    database: databaseName,
     authSwitchHandler: (data, cb) => {
         if (data.pluginName === 'caching_sha2_password') {
           const password = mySQLPassword; // Set your actual password
@@ -27,14 +30,6 @@ let db_con  = mysql.createPool({
         console.log("connected to Database");
       }
 })*/
-
-/*db_con.connect((err) => {
-    if (err) {
-      console.log("Database Connection Failed !!!", err);
-    } else {
-      console.log("connected to Database");
-    }
-});*/
   
 module.exports = db_con.promise();
 ;
