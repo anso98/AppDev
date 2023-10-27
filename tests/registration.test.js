@@ -1,7 +1,10 @@
 const request = require('supertest');
-const app = require('../server/server'); 
+const app = require('../server/server');
+const database = require('../server/sqlConnection'); 
+process.env.NODE_ENV = 'test';
 
 describe('POST /register', () => {
+
   it('registers a new user', async () => {
     const newUser = {
       email: 'test@example.com',
@@ -20,7 +23,7 @@ describe('POST /register', () => {
   it('returns error for duplicate username', async () => {
     const existingUser = {
       email: 'existing@example.com',
-      username: 'existinguser',
+      username: 'testuser',
       password: 'existingpassword',
     };
 
@@ -34,7 +37,7 @@ describe('POST /register', () => {
 
   it('returns error for duplicate email', async () => {
     const existingEmail = {
-      email: 'existing@example.com',
+      email: 'test@example.com',
       username: 'newuser',
       password: 'newpassword',
     };
@@ -46,4 +49,10 @@ describe('POST /register', () => {
 
     expect(response.body.error).toBe('Email already exists');
   });
+
+  afterAll(async () => {
+    await database.query('DELETE FROM users');
+    await database.end(); // Close the database connection pool
+  });
+
 });

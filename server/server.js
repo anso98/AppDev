@@ -41,8 +41,6 @@ app.get('/api/data', (req, res) => {
   
 });
 
-//const users = [];
-
 // Register 
 app.post('/register', async (req, res) => {
   try {
@@ -117,7 +115,51 @@ app.post('/login', async (req, res) => {
       console.error('Login error:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
-  });
+});
+
+// THOUGHTS: should only work if validated that user is loged in! Not everyone should be able to call this endpoint!
+// Delete user profile
+app.delete('/delete-profile/', async (req, res) => {
+    try{
+        const identifier = req.body.identifier; // This can be either email or username
+        const deleteQuery = 'DELETE FROM users WHERE email = ? OR username = ?';
+        
+        await database.query(deleteQuery, [identifier, identifier]);
+        
+        return res.status(200).json({ message: 'User profile deleted successfully'});
+    } catch (error) {
+        console.error('Error deleting user profile:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+
+    }
+    
+});
+
+// THOUGHTS: Should be with email validation - sending email to validate password change! to be more secure!
+// Change user password
+app.put('/change-password/', async (req, res) => {
+    try{
+        const email = req.body.email;
+        const newPassword = req.body.newPassword;
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        const query = 'UPDATE users SET password = ? WHERE email = ?';
+    
+        console.log("Within change password function", email, newPassword);
+
+        await database.query(query, [hashedPassword, email]) 
+
+        res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) { 
+        console.error('Error changing password', error);
+        res.status(500).json({ error: 'Internal server error' });
+  
+    }
+    
+});
+  
 
 module.exports = app;
 

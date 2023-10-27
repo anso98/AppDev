@@ -2,14 +2,57 @@ import { StatusBar } from 'expo-status-bar';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+import { styles } from './Styles';
+import LoginScreen from './LoginScreen';
+import RegistrationScreen from './RegistrationScreen';
+import LogoutScreen from './LogoutScreen';
+import DeleteProfileScreen from './DeleteProfileScreen';
 
+const AuthStack = createNativeStackNavigator();
 
-const Stack = createNativeStackNavigator();
+function AuthStackScreen() {
+  return (
+    <AuthStack.Navigator>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Registration" component={RegistrationScreen} />
+    </AuthStack.Navigator>
+  );
+}
 
-// Idea: login soll über home möglich sein (dafür ist stack gut); wenn Login; dann auf die nächste Seite --> und dann eine tab benutzerauswahl!
+const SettingsStack = createNativeStackNavigator();
+
+function SettingsStackScreen() {
+  return (
+    <SettingsStack.Navigator>
+      <SettingsStack.Screen name="Settings" component={Settings} />
+      <SettingsStack.Screen
+        name="Logout"
+        component={LogoutScreen}
+        options={{ title: 'Logout' }}
+      />
+      <SettingsStack.Screen
+        name="DeleteProfile"
+        component={DeleteProfileScreen}
+        options={{ title: 'Delete Profile' }}
+      />
+    </SettingsStack.Navigator>
+  );
+}
+
+const Tab = createBottomTabNavigator();
+
+function MainApp() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="Settings" component={SettingsStackScreen} />
+    </Tab.Navigator>
+  );
+}
 
 function Home( { navigation }) {
 
@@ -35,13 +78,13 @@ function Home( { navigation }) {
       <Text>{data}</Text>
       <Text>HELLO!</Text>
       <StatusBar style="auto" />
-      <Button
-        title="Go to Settings"
-        onPress={() => navigation.navigate('Settings')}
-      />
       </View>
 
     /*</Tab.Navigator>*/
+    /*<Button
+        title="Go to Settings"
+        onPress={() => navigation.navigate('Settings')}
+      />*/
   );
   }
 
@@ -76,35 +119,28 @@ function Settings({ navigation }) {
   return (
     <View style={styles.container}>
       <Text>Settings!</Text>
-      <Button title="Go to Home" onPress={() => navigation.navigate('Home')} />
     </View>
+    /*<Button title="Go to Home" onPress={() => navigation.navigate('Home')} />*/
   );
 }
 
 export default function App() {
+  const userLoggedIn = false; // Replace this with your authentication logic
+
   return (
-    <NavigationContainer> 
+    <NavigationContainer>
+      {userLoggedIn ? (
+        <MainApp />
+      ) : (
+        <AuthStackScreen />
+      )}
+    </NavigationContainer>
+      /*<NavigationContainer> 
       <Stack.Navigator>
         <Stack.Screen name="Home" component={Home} />
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="Settings" component={Settings} />
       </Stack.Navigator>
-    </NavigationContainer>
+    </NavigationContainer>*/
   );
 }
-
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ff20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  test2: {
-    flex: 1,
-    backgroundColor: '#ff5',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
