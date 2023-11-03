@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert } from 'react-native';
 import axios from 'axios';
+import IPADDRESS from './OverviewSheet';
+
 
 const RegistrationScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
@@ -9,13 +11,15 @@ const RegistrationScreen = ({ navigation }) => {
 
   const handleRegistration = async () => {
     try {
-      const response = await axios.post('http://192.168.178.23:5000/register', {
+      registIPAddress = IPADDRESS.concat('/register')
+      const response = await axios.post(registIPAddress, {
         username,
         email,
         password,
       });
 
       // Registration successful, you can now redirect to the login screen
+      print("response");
       navigation.navigate('Login');
     } catch (error) {
       Alert.alert('Registration Failed', 'Error registering user');
